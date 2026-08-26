@@ -11,6 +11,8 @@
       --shelf-dark: #3d2514;
       --card-bg: #2a2a38;
       --accent: #6c5ce7;
+      --accent-hover: #5b4cc4;
+      --success: #2ecc71;
       --text: #ffffff;
       --text-sub: #a0a0b0;
     }
@@ -18,7 +20,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text); overflow-x: hidden; }
 
-    /* Auth View */
+    /* Auth Screen */
     .auth-container {
       display: flex; justify-content: center; align-items: center; min-height: 100vh;
       background: radial-gradient(circle at center, #2c2c3e 0%, #1a1a24 100%);
@@ -36,10 +38,10 @@
       width: 100%; padding: 12px; margin-top: 12px; border-radius: 6px; border: none;
       background: var(--accent); color: #fff; font-weight: bold; cursor: pointer; transition: 0.2s;
     }
-    .auth-box button:hover { opacity: 0.9; }
+    .auth-box button:hover { background: var(--accent-hover); }
     .toggle-auth { margin-top: 15px; font-size: 13px; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
 
-    /* Main View */
+    /* Main Screen */
     .main-container { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
     header {
       display: flex; justify-content: space-between; align-items: center;
@@ -48,9 +50,14 @@
     .user-info { font-size: 14px; color: var(--text-sub); }
     .btn-secondary {
       background: #4a4a5c; color: #fff; border: none; padding: 8px 16px;
-      border-radius: 6px; cursor: pointer; font-size: 13px;
+      border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.2s;
     }
     .btn-secondary:hover { background: #5a5a6c; }
+    .btn-success {
+      background: var(--success); color: #fff; border: none; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s;
+    }
+    .btn-success:hover { opacity: 0.9; }
 
     /* API Bar */
     .api-bar {
@@ -61,7 +68,7 @@
     .api-status { font-size: 13px; font-weight: bold; color: var(--text-sub); margin-left: 5px; }
     .api-link { color: #8b78f6; font-size: 13px; text-decoration: underline; margin-left: 10px; }
 
-    /* Drag Drop Area */
+    /* Drop Zone */
     .drop-zone {
       border: 2px dashed var(--accent); border-radius: 12px; padding: 30px; text-align: center;
       background: rgba(108, 92, 231, 0.05); cursor: pointer; transition: 0.2s; margin-bottom: 30px;
@@ -81,7 +88,7 @@
 
     /* Book UI */
     .book {
-      width: 45px; height: 130px; background: #e74c3c; border-radius: 3px 6px 6px 3px;
+      width: 48px; height: 135px; background: #e74c3c; border-radius: 3px 6px 6px 3px;
       cursor: pointer; position: relative; transition: transform 0.2s;
       display: flex; align-items: center; justify-content: center;
       box-shadow: -3px 0 5px rgba(0,0,0,0.3), inset -2px 0 5px rgba(255,255,255,0.2);
@@ -92,7 +99,6 @@
       color: #fff; font-weight: bold; max-height: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* Tooltip (Hover Info) */
     .book-tooltip {
       visibility: hidden; width: 180px; background-color: #000; color: #fff;
       text-align: left; border-radius: 6px; padding: 10px; position: absolute;
@@ -102,17 +108,36 @@
     }
     .book:hover .book-tooltip { visibility: visible; opacity: 1; }
 
-    /* Modal (Click Info) */
+    /* Modal & Chat Interface */
     .modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center;
     }
     .modal-content {
-      background: var(--card-bg); width: 90%; max-width: 600px; padding: 30px;
-      border-radius: 12px; border: 1px solid #4a4a5c; position: relative; max-height: 80vh; overflow-y: auto;
+      background: var(--card-bg); width: 90%; max-width: 680px; padding: 25px;
+      border-radius: 12px; border: 1px solid #4a4a5c; position: relative; max-height: 90vh;
+      display: flex; flex-direction: column; gap: 15px;
     }
-    .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-sub); }
-    .ai-summary { background: #1a1a24; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--accent); font-size: 14px; line-height: 1.6; }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #3a3a4c; padding-bottom: 12px; }
+    .close-btn { font-size: 24px; cursor: pointer; color: var(--text-sub); line-height: 1; }
+    
+    .ai-summary { background: #1a1a24; padding: 12px 15px; border-radius: 8px; border-left: 4px solid var(--accent); font-size: 13px; line-height: 1.5; }
+
+    .chat-section {
+      display: flex; flex-direction: column; flex: 1; min-height: 250px; max-height: 320px;
+      background: #15151e; border-radius: 8px; border: 1px solid #3a3a4c; overflow: hidden;
+    }
+    .chat-title { background: #222230; padding: 8px 12px; font-size: 12px; font-weight: bold; color: var(--text-sub); border-bottom: 1px solid #3a3a4c; }
+    .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+    
+    .message { max-width: 80%; padding: 8px 12px; border-radius: 8px; line-height: 1.4; word-break: break-word; }
+    .message.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 2px; }
+    .message.ai { align-self: flex-start; background: #2a2a38; color: #e0e0e0; border: 1px solid #3a3a4c; border-bottom-left-radius: 2px; }
+
+    .chat-input-row { display: flex; gap: 8px; padding: 10px; background: #1a1a24; border-top: 1px solid #3a3a4c; }
+    .chat-input-row input { flex: 1; padding: 8px 12px; border-radius: 4px; border: 1px solid #4a4a5c; background: #2a2a38; color: #fff; font-size: 13px; outline: none; }
+    .chat-input-row button { padding: 8px 16px; border-radius: 4px; border: none; background: var(--accent); color: #fff; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .chat-input-row button:hover { background: var(--accent-hover); }
   </style>
 </head>
 <body>
@@ -120,7 +145,7 @@
   <!-- Auth Screen -->
   <div class="auth-container" id="authScreen">
     <div class="auth-box">
-      <h2 id="authTitle">연구실 서가 로그인</h2>
+      <h2>연구실 서가 로그인</h2>
       <div id="emailForm">
         <input type="email" id="emailInput" placeholder="이메일 주소" />
         <input type="password" id="passwordInput" placeholder="비밀번호" />
@@ -148,7 +173,7 @@
     </header>
 
     <div class="api-bar">
-      <input type="password" id="geminiApiKey" placeholder="Gemini API Key를 입력하세요 (AI 요약 기능 활성화)" />
+      <input type="password" id="geminiApiKey" placeholder="Gemini API Key를 입력하세요" />
       <button class="btn-secondary" onclick="saveApiKey()">API 키 검증 및 저장</button>
       <span class="api-status" id="apiStatus">[미설정]</span>
       <a class="api-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">🔑 API 키 발급받기 ↗</a>
@@ -159,26 +184,42 @@
       <input type="file" id="fileInput" hidden multiple />
     </div>
 
-    <!-- Shelf Container -->
+    <!-- Bookshelf -->
     <div class="bookshelf-container" id="bookshelf">
-      <div class="shelf" id="shelf-0"></div>
+      <div class="shelf"></div>
     </div>
   </div>
 
-  <!-- Detail Modal -->
+  <!-- Detail & AI Chat Modal -->
   <div class="modal" id="detailModal">
     <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
-      <h3 id="modalTitle">파일 제목</h3>
-      <p style="font-size: 12px; color: var(--text-sub); margin-top: 5px;" id="modalMeta">파일 정보</p>
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle">파일 제목</h3>
+          <p style="font-size: 12px; color: var(--text-sub); margin-top: 4px;" id="modalMeta">파일 정보</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn-success" id="downloadBtn">📥 파일 다운로드</button>
+          <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+      </div>
+
       <div class="ai-summary">
-        <strong>🤖 AI 문서 분석 및 요약</strong>
-        <p id="modalSummary" style="margin-top: 8px;">분석 중입니다...</p>
+        <strong>🤖 AI 문서 개요 요약</strong>
+        <p id="modalSummary" style="margin-top: 6px;">요약 정보를 불러오는 중입니다...</p>
+      </div>
+
+      <div class="chat-section">
+        <div class="chat-title">💬 파일 전용 AI 질의응답 (Gemini 1.5 Flash)</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="이 파일에 대해 질문해보세요..." onkeypress="handleChatKeyPress(event)"/>
+          <button onclick="sendChatMessage()">전송</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase & App Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -190,8 +231,7 @@
       projectId: "file-nang-jang-go",
       storageBucket: "file-nang-jang-go.firebasestorage.app",
       messagingSenderId: "500103371633",
-      appId: "1:500103371633:web:cb216c06c03c0ec37634d0",
-      measurementId: "G-WVYYN0JPNQ"
+      appId: "1:500103371633:web:cb216c06c03c0ec37634d0"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -200,71 +240,37 @@
 
     let currentUser = null;
     let booksData = [];
+    let currentActiveBook = null;
+    const fileBlobs = {};
     const bookColors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c'];
 
-    // 최신 활성 모델 순서대로 탐색 시도 (폐지된 gemini-1.5-flash 우회 및 404 차단)
+    // Google AI Studio 정식 엔드포인트 단일 호출 (404 원인 제거)
     async function requestGeminiAPI(apiKey, promptText) {
-      const candidateModels = [
-        'gemini-2.5-flash',
-        'gemini-2.0-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-pro'
-      ];
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
 
-      // 이전에 작동했던 모델이 있다면 최우선 적용
-      const savedModel = localStorage.getItem('gemini_working_model');
-      if (savedModel) {
-        const idx = candidateModels.indexOf(savedModel);
-        if (idx > -1) candidateModels.splice(idx, 1);
-        candidateModels.unshift(savedModel);
-      }
+        const data = await response.json();
 
-      let lastError = "";
-
-      for (const model of candidateModels) {
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: promptText }] }]
-            })
-          });
-
-          const data = await response.json();
-
-          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            localStorage.setItem('gemini_working_model', model);
-            return {
-              success: true,
-              text: data.candidates[0].content.parts[0].text,
-              model: model
-            };
-          }
-
-          // 404 또는 모델 미지원 오류 발생 시 다음 후보 모델로 계속 시도
-          if (response.status === 404 || (data.error && data.error.message && data.error.message.includes('not found'))) {
-            lastError = data.error?.message || `모델 ${model} 찾을 수 없음 (404)`;
-            continue;
-          }
-
-          // 400, 403 등 API Key 본래 자격증명 문제인 경우 즉시 중단
-          if (data.error) {
-            return { success: false, error: data.error.message };
-          }
-        } catch (err) {
-          lastError = "통신 연결 중 오류가 발생했습니다.";
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return { success: true, text: data.candidates[0].content.parts[0].text };
+        } else if (data.error) {
+          return { success: false, error: data.error.message };
+        } else {
+          return { success: false, error: "알 수 없는 API 응답 형태입니다." };
         }
+      } catch (err) {
+        return { success: false, error: "네트워크 통신 오류가 발생했습니다." };
       }
-
-      return { success: false, error: lastError || "사용 가능한 Gemini 모델 엔드포인트를 찾을 수 없습니다." };
     }
 
-    // 로컬 스토리지 API 키 로드
     window.addEventListener('DOMContentLoaded', () => {
       const savedKey = localStorage.getItem('gemini_api_key');
       if (savedKey) {
@@ -273,15 +279,13 @@
       }
     });
 
-    // API 키 검증 및 저장
     window.saveApiKey = async function() {
       const keyInput = document.getElementById('geminiApiKey').value;
-      const cleanKey = keyInput ? keyInput.trim().replace(/^["']|["']$/g, '') : '';
+      const cleanKey = keyInput ? keyInput.trim() : '';
 
       if (!cleanKey) {
         updateApiStatus("[미설정]", "var(--text-sub)");
         localStorage.removeItem('gemini_api_key');
-        localStorage.removeItem('gemini_working_model');
         alert("API 키를 입력해주세요.");
         return;
       }
@@ -289,20 +293,16 @@
     };
 
     async function verifyApiKey(key, showAlert = false) {
-      const cleanKey = key.trim().replace(/^["']|["']$/g, '');
       updateApiStatus("[검증 중...]", "#f1c40f");
-
-      const res = await requestGeminiAPI(cleanKey, "ping");
+      const res = await requestGeminiAPI(key, "테스트 연동 확인");
 
       if (res.success) {
-        updateApiStatus(`🟢 정상 작동중 (${res.model})`, "#2ecc71");
-        localStorage.setItem('gemini_api_key', cleanKey);
-        if (showAlert) alert(`API 키 검증 성공!\n사용 모델: ${res.model}`);
+        updateApiStatus("🟢 정상 작동중 (gemini-1.5-flash)", "#2ecc71");
+        localStorage.setItem('gemini_api_key', key);
+        if (showAlert) alert("API 키가 성공적으로 연결되었습니다!");
       } else {
         updateApiStatus("🔴 API 키 오류", "#e74c3c");
-        if (showAlert) {
-          alert(`[API 키 검증 실패]\n${res.error}\n\n※ Google AI Studio(https://aistudio.google.com/app/apikey)에서 발급받은 올바른 API 키인지 확인해주세요.`);
-        }
+        if (showAlert) alert(`API 키 연동 실패:\n${res.error}`);
       }
     }
 
@@ -314,13 +314,12 @@
       }
     }
 
-    // 로그인 상태 감지
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('mainScreen').style.display = 'block';
-        document.getElementById('userDisplay').innerText = `접속 계정: ${user.email || '백업코드 로그인'}`;
+        document.getElementById('userDisplay').innerText = `접속 계정: ${user.email || '백업코드 접속'}`;
         await loadUserData();
       } else {
         document.getElementById('authScreen').style.display = 'flex';
@@ -328,7 +327,6 @@
       }
     });
 
-    // 이메일 로그인/가입 처리
     document.getElementById('emailAuthBtn').addEventListener('click', async () => {
       const email = document.getElementById('emailInput').value;
       const password = document.getElementById('passwordInput').value;
@@ -346,7 +344,6 @@
       }
     });
 
-    // 백업코드 로그인 처리
     document.getElementById('backupAuthBtn').addEventListener('click', async () => {
       const code = document.getElementById('backupCodeInput').value.trim();
       if(!code) return alert("백업 코드를 입력하세요.");
@@ -354,8 +351,7 @@
       const docRef = doc(db, "backups", code);
       const docSnap = await getDoc(docRef);
       if(docSnap.exists()){
-        const data = docSnap.data();
-        booksData = data.books || [];
+        booksData = docSnap.data().books || [];
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('mainScreen').style.display = 'block';
         document.getElementById('userDisplay').innerText = `백업코드 접속: ${code}`;
@@ -365,22 +361,16 @@
       }
     });
 
-    // 백업 코드 생성
     window.generateBackupCode = async () => {
       if(!currentUser) return alert("로그인 후 이용 가능합니다.");
       const code = 'BC-' + Math.random().toString(36).substring(2, 9).toUpperCase();
-      await setDoc(doc(db, "backups", code), {
-        uid: currentUser.uid,
-        books: booksData
-      });
-      alert(`발급된 백업 코드: ${code}\n이 코드로 나중에 언제든 복구할 수 있습니다.`);
+      await setDoc(doc(db, "backups", code), { uid: currentUser.uid, books: booksData });
+      alert(`발급된 백업 코드: ${code}`);
     };
 
-    // 데이터 로드/저장
     async function loadUserData() {
       if(!currentUser) return;
-      const userRef = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(userRef);
+      const snap = await getDoc(doc(db, "users", currentUser.uid));
       if(snap.exists()) {
         booksData = snap.data().books || [];
         renderBookshelf();
@@ -391,17 +381,15 @@
       booksData.push(newBook);
       renderBookshelf();
       if(currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        await setDoc(userRef, { books: booksData }, { merge: true });
+        await setDoc(doc(db, "users", currentUser.uid), { books: booksData }, { merge: true });
       }
     }
 
-    // 파일 처리 및 AI 요약
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
 
     dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); });
+    dropZone.addEventListener('dragover', (e) => e.preventDefault());
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       handleFiles(e.dataTransfer.files);
@@ -409,42 +397,32 @@
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
     async function handleFiles(files) {
-      const apiKey = document.getElementById('geminiApiKey').value;
-      const cleanKey = apiKey ? apiKey.trim().replace(/^["']|["']$/g, '') : '';
+      const apiKey = localStorage.getItem('gemini_api_key');
 
       for (let file of files) {
+        const fileId = Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+        fileBlobs[fileId] = URL.createObjectURL(file);
+
         const fileData = {
-          id: Date.now() + Math.random().toString(),
+          id: fileId,
           name: file.name,
           size: (file.size / 1024).toFixed(1) + ' KB',
           type: file.type || 'unknown',
           color: bookColors[Math.floor(Math.random() * bookColors.length)],
-          summary: "AI 분석을 진행하지 않았거나 실패했습니다."
+          summary: "AI 요약이 준비되지 않았습니다.",
+          chatHistory: [{ role: 'ai', text: `안녕하세요! **${file.name}** 파일에 대해 질문해 주세요.` }]
         };
 
-        if (cleanKey) {
-          fileData.summary = await analyzeWithGemini(file, cleanKey);
-        } else {
-          fileData.summary = "API Key를 상단에 입력하시면 자동으로 AI 분석 내용이 저장됩니다.";
+        if (apiKey) {
+          const prompt = `다음 파일의 예상 용도와 주요 내용을 2줄로 간결하게 설명해줘. 파일명: ${file.name}`;
+          const res = await requestGeminiAPI(apiKey, prompt);
+          if (res.success) fileData.summary = res.text;
         }
 
         await saveBookData(fileData);
       }
     }
 
-    // Gemini API 연동 함수
-    async function analyzeWithGemini(file, apiKey) {
-      const prompt = `다음 파일 이름과 확장자를 참고하여 이 파일이 연구실에서 어떤 용도로 사용되는 문서인지 3줄 이내로 핵심 요약해줘. 파일명: ${file.name}`;
-      const res = await requestGeminiAPI(apiKey, prompt);
-
-      if (res.success) {
-        return res.text;
-      } else {
-        return `AI 분석 실패: ${res.error}`;
-      }
-    }
-
-    // 책장 렌더링
     function renderBookshelf() {
       const bookshelf = document.getElementById('bookshelf');
       bookshelf.innerHTML = '';
@@ -467,7 +445,7 @@
           <span class="book-title">${book.name}</span>
           <div class="book-tooltip">
             <strong>${book.name}</strong><br/>
-            크기: ${book.size}<br/>
+            용량: ${book.size}<br/>
             타입: ${book.type}
           </div>
         `;
@@ -477,16 +455,98 @@
       });
     }
 
-    // 모달 제어
     window.openModal = (book) => {
+      currentActiveBook = book;
+      if (!currentActiveBook.chatHistory) {
+        currentActiveBook.chatHistory = [{ role: 'ai', text: `안녕하세요! **${book.name}** 파일에 대해 질문해 주세요.` }];
+      }
+
       document.getElementById('modalTitle').innerText = book.name;
       document.getElementById('modalMeta').innerText = `용량: ${book.size} | 유형: ${book.type}`;
       document.getElementById('modalSummary').innerText = book.summary;
+      
+      document.getElementById('downloadBtn').onclick = () => downloadFile(book);
+
+      renderChatMessages();
       document.getElementById('detailModal').style.display = 'flex';
+    };
+
+    function downloadFile(book) {
+      let downloadUrl = fileBlobs[book.id];
+      
+      if (!downloadUrl) {
+        const dummyContent = `[파일 데이터]\n파일명: ${book.name}\n용량: ${book.size}\nAI 요약: ${book.summary}`;
+        const blob = new Blob([dummyContent], { type: 'text/plain;charset=utf-8' });
+        downloadUrl = URL.createObjectURL(blob);
+      }
+
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = book.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '';
+
+      if (!currentActiveBook || !currentActiveBook.chatHistory) return;
+
+      currentActiveBook.chatHistory.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${msg.role}`;
+        msgDiv.innerHTML = msg.text.replace(/\n/g, '<br/>');
+        container.appendChild(msgDiv);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    window.sendChatMessage = async () => {
+      const inputEl = document.getElementById('chatInput');
+      const text = inputEl.value.trim();
+      if (!text || !currentActiveBook) return;
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        alert("API 키가 설정되지 않았습니다. 상단 입력란에 키를 등록해주세요.");
+        return;
+      }
+
+      currentActiveBook.chatHistory.push({ role: 'user', text: text });
+      inputEl.value = '';
+      renderChatMessages();
+
+      currentActiveBook.chatHistory.push({ role: 'ai', text: '<i>답변 생성 중...</i>' });
+      renderChatMessages();
+
+      const prompt = `문서 파일명: ${currentActiveBook.name}\n문서 요약: ${currentActiveBook.summary}\n\n사용자 질문: ${text}\n이 문서를 바탕으로 사용자에게 정중하게 답변해주세요.`;
+      const res = await requestGeminiAPI(apiKey, prompt);
+
+      currentActiveBook.chatHistory.pop();
+
+      if (res.success) {
+        currentActiveBook.chatHistory.push({ role: 'ai', text: res.text });
+      } else {
+        currentActiveBook.chatHistory.push({ role: 'ai', text: `⚠️ 호출 오류: ${res.error}` });
+      }
+
+      renderChatMessages();
+
+      if (currentUser) {
+        await setDoc(doc(db, "users", currentUser.uid), { books: booksData }, { merge: true });
+      }
+    };
+
+    window.handleChatKeyPress = (e) => {
+      if (e.key === 'Enter') window.sendChatMessage();
     };
 
     window.closeModal = () => {
       document.getElementById('detailModal').style.display = 'none';
+      currentActiveBook = null;
     };
 
     window.logout = () => signOut(auth);
