@@ -201,7 +201,55 @@
     let booksData = [];
     const bookColors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c'];
 
-    // 로컬 스토리지에 저장된 API 키 불러오기 및 검증
+    // 계정에 사용 가능한 모델을 동적으로 탐색하여 API 호출을 수행하는 로직
+    async function requestGeminiAPI(apiKey, promptText) {
+      try {
+        // 1. ModelService.ListModels 호출로 활성화된 모델 목록 가져오기
+        const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        
+        if (!modelsRes.ok) {
+          const errData = await modelsRes.json().catch(() => ({}));
+          return { success: false, error: errData.error?.message || `API 키 검증 실패 (HTTP ${modelsRes.status})` };
+        }
+
+        const modelsData = await modelsRes.json();
+        const availableModels = modelsData.models || [];
+
+        // 2. generateContent를 지원하는 flash 계열 또는 기본 Gemini 모델 탐색
+        const targetModel = availableModels.find(m => 
+          m.supportedGenerationMethods?.includes('generateContent') && m.name.includes('flash')
+        ) || availableModels.find(m => 
+          m.supportedGenerationMethods?.includes('generateContent')
+        );
+
+        if (!targetModel) {
+          return { success: false, error: "현재 API 키로 사용할 수 있는 generateContent 모델이 존재하지 않습니다." };
+        }
+
+        // targetModel.name 형태: "models/gemini-2.0-flash" 등
+        const modelPath = targetModel.name;
+
+        // 3. 동적으로 확보한 유효 모델 경로로 텍스트 생성 요청
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return { success: true, text: data.candidates[0].content.parts[0].text };
+        } else {
+          return { success: false, error: data.error?.message || `HTTP ${response.status} 응답 오류` };
+        }
+      } catch (err) {
+        return { success: false, error: "네트워크 연결 오류 또는 CORS 제한이 발생했습니다." };
+      }
+    }
+
+    // 로컬 스토리지 저장 키 불러오기 및 초기 검증
     window.addEventListener('DOMContentLoaded', () => {
       const savedKey = localStorage.getItem('gemini_api_key');
       if (savedKey) {
@@ -228,32 +276,17 @@
       const cleanKey = key.trim().replace(/^["']|["']$/g, '');
       updateApiStatus("[검증 중...]", "#f1c40f");
 
-      try {
-        // gemini-1.5-flash 모델에 경량 요청을 전송하여 실제 API 동작 여부 정교 검증
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "ping" }] }]
-          })
-        });
+      const res = await requestGeminiAPI(cleanKey, "ping");
 
-        const data = await response.json();
-
-        if (response.ok && data.candidates) {
-          updateApiStatus("🟢 정상 작동중", "#2ecc71");
-          localStorage.setItem('gemini_api_key', cleanKey);
-          if (showAlert) alert("API 키가 정상 검증 및 저장되었습니다!");
-        } else {
-          const errorDetail = data.error?.message || "유효하지 않은 API 키입니다.";
-          updateApiStatus("🔴 API 키 오류", "#e74c3c");
-          if (showAlert) {
-            alert(`[API 키 검증 실패]\n${errorDetail}\n\n※ Google AI Studio(https://aistudio.google.com/app/apikey)에서 발급받은 Gemini 전용 API 키인지 확인해주세요.`);
-          }
+      if (res.success) {
+        updateApiStatus("🟢 정상 작동중", "#2ecc71");
+        localStorage.setItem('gemini_api_key', cleanKey);
+        if (showAlert) alert("API 키가 정상 검증 및 저장되었습니다!");
+      } else {
+        updateApiStatus("🔴 API 키 오류", "#e74c3c");
+        if (showAlert) {
+          alert(`[API 키 검증 실패]\n${res.error}\n\n※ Google AI Studio(https://aistudio.google.com/app/apikey)에서 Gemini 전용 키를 올바르게 발급받았는지 확인해주세요.`);
         }
-      } catch (err) {
-        updateApiStatus("🔴 검증 실패", "#e74c3c");
-        if (showAlert) alert("네트워크 연결 실패 또는 CORS 제약으로 API 검증에 실패했습니다.");
       }
     }
 
@@ -385,25 +418,13 @@
 
     // Gemini API 연동 함수
     async function analyzeWithGemini(file, apiKey) {
-      const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: `다음 파일 이름과 확장자를 참고하여 이 파일이 연구실에서 어떤 용도로 사용되는 문서인지 3줄 이내로 핵심 요약해줘. 파일명: ${file.name}` }] }]
-          })
-        });
+      const prompt = `다음 파일 이름과 확장자를 참고하여 이 파일이 연구실에서 어떤 용도로 사용되는 문서인지 3줄 이내로 핵심 요약해줘. 파일명: ${file.name}`;
+      const res = await requestGeminiAPI(apiKey, prompt);
 
-        if (!response.ok) {
-          const errData = await response.json();
-          return `AI 분석 실패: ${errData.error?.message || 'API 응답 오류'}`;
-        }
-
-        const result = await response.json();
-        return result.candidates[0].content.parts[0].text;
-      } catch (err) {
-        return "AI 분석 도중 네트워크 오류가 발생했습니다.";
+      if (res.success) {
+        return res.text;
+      } else {
+        return `AI 분석 실패: ${res.error}`;
       }
     }
 
