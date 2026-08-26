@@ -210,7 +210,7 @@
       </div>
 
       <div class="chat-section">
-        <div class="chat-title">💬 파일 전용 AI 질의응답 (Gemini 1.5 Flash)</div>
+        <div class="chat-title">💬 파일 전용 AI 질의응답</div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-row">
           <input type="text" id="chatInput" placeholder="이 파일에 대해 질문해보세요..." onkeypress="handleChatKeyPress(event)"/>
@@ -244,31 +244,35 @@
     const fileBlobs = {};
     const bookColors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c'];
 
-    // Google AI Studio 정식 엔드포인트 단일 호출 (404 원인 제거)
+    // 최신 활성 모델 호환 호출 함수 (gemini-2.0-flash 우선 적용)
     async function requestGeminiAPI(apiKey, promptText) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-          })
-        });
+      const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+      let lastError = "";
 
-        const data = await response.json();
+      for (const model of candidateModels) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }]
+            })
+          });
 
-        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          return { success: true, text: data.candidates[0].content.parts[0].text };
-        } else if (data.error) {
-          return { success: false, error: data.error.message };
-        } else {
-          return { success: false, error: "알 수 없는 API 응답 형태입니다." };
+          const data = await response.json();
+
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return { success: true, text: data.candidates[0].content.parts[0].text, model: model };
+          } else if (data.error) {
+            lastError = data.error.message;
+          }
+        } catch (err) {
+          lastError = "네트워크 통신 오류가 발생했습니다.";
         }
-      } catch (err) {
-        return { success: false, error: "네트워크 통신 오류가 발생했습니다." };
       }
+
+      return { success: false, error: lastError || "유효한 AI 모델 엔드포인트를 찾지 못했습니다." };
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -294,12 +298,12 @@
 
     async function verifyApiKey(key, showAlert = false) {
       updateApiStatus("[검증 중...]", "#f1c40f");
-      const res = await requestGeminiAPI(key, "테스트 연동 확인");
+      const res = await requestGeminiAPI(key, "연동 테스트");
 
       if (res.success) {
-        updateApiStatus("🟢 정상 작동중 (gemini-1.5-flash)", "#2ecc71");
+        updateApiStatus(`🟢 정상 작동중 (${res.model})`, "#2ecc71");
         localStorage.setItem('gemini_api_key', key);
-        if (showAlert) alert("API 키가 성공적으로 연결되었습니다!");
+        if (showAlert) alert(`API 키가 연동되었습니다! (${res.model})`);
       } else {
         updateApiStatus("🔴 API 키 오류", "#e74c3c");
         if (showAlert) alert(`API 키 연동 실패:\n${res.error}`);
@@ -409,12 +413,12 @@
           size: (file.size / 1024).toFixed(1) + ' KB',
           type: file.type || 'unknown',
           color: bookColors[Math.floor(Math.random() * bookColors.length)],
-          summary: "AI 요약이 준비되지 않았습니다.",
-          chatHistory: [{ role: 'ai', text: `안녕하세요! **${file.name}** 파일에 대해 질문해 주세요.` }]
+          summary: "AI 요약 정보가 없습니다.",
+          chatHistory: [{ role: 'ai', text: `안녕하세요! **${file.name}** 파일 관련 내용을 질문해 주세요.` }]
         };
 
         if (apiKey) {
-          const prompt = `다음 파일의 예상 용도와 주요 내용을 2줄로 간결하게 설명해줘. 파일명: ${file.name}`;
+          const prompt = `다음 파일의 예상 용도와 핵심 내용을 2줄로 간결하게 요약해줘. 파일명: ${file.name}`;
           const res = await requestGeminiAPI(apiKey, prompt);
           if (res.success) fileData.summary = res.text;
         }
@@ -458,7 +462,7 @@
     window.openModal = (book) => {
       currentActiveBook = book;
       if (!currentActiveBook.chatHistory) {
-        currentActiveBook.chatHistory = [{ role: 'ai', text: `안녕하세요! **${book.name}** 파일에 대해 질문해 주세요.` }];
+        currentActiveBook.chatHistory = [{ role: 'ai', text: `안녕하세요! **${book.name}** 파일 관련 질문을 입력하세요.` }];
       }
 
       document.getElementById('modalTitle').innerText = book.name;
@@ -475,7 +479,7 @@
       let downloadUrl = fileBlobs[book.id];
       
       if (!downloadUrl) {
-        const dummyContent = `[파일 데이터]\n파일명: ${book.name}\n용량: ${book.size}\nAI 요약: ${book.summary}`;
+        const dummyContent = `[파일 정보]\n파일명: ${book.name}\n용량: ${book.size}\nAI 요약: ${book.summary}`;
         const blob = new Blob([dummyContent], { type: 'text/plain;charset=utf-8' });
         downloadUrl = URL.createObjectURL(blob);
       }
@@ -511,7 +515,7 @@
 
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
-        alert("API 키가 설정되지 않았습니다. 상단 입력란에 키를 등록해주세요.");
+        alert("상단에 Gemini API Key를 등록해야 대화가 가능합니다.");
         return;
       }
 
@@ -522,7 +526,7 @@
       currentActiveBook.chatHistory.push({ role: 'ai', text: '<i>답변 생성 중...</i>' });
       renderChatMessages();
 
-      const prompt = `문서 파일명: ${currentActiveBook.name}\n문서 요약: ${currentActiveBook.summary}\n\n사용자 질문: ${text}\n이 문서를 바탕으로 사용자에게 정중하게 답변해주세요.`;
+      const prompt = `문서 파일명: ${currentActiveBook.name}\n문서 요약: ${currentActiveBook.summary}\n\n질문: ${text}\n위 문서 내용을 참고해 명확하게 답변해줘.`;
       const res = await requestGeminiAPI(apiKey, prompt);
 
       currentActiveBook.chatHistory.pop();
